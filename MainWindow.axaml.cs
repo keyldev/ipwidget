@@ -91,7 +91,9 @@ public partial class MainWindow : Window
         _compactChk = this.FindControl<CheckBox>("CompactChk")!;
 
         // ---- full view wiring ----
-        this.FindControl<Grid>("TitleBar")!.PointerPressed += OnDrag;
+        // drag the whole card / settings overlay; buttons consume their own press so they won't drag
+        _fullCard.PointerPressed += OnDrag;
+        _settingsOverlay.PointerPressed += OnDrag;
         this.FindControl<Button>("SettingsBtn")!.Click += (_, _) => ShowSettings(true);
         this.FindControl<Button>("CompactBtn")!.Click += (_, _) => SetCompact(true);
         this.FindControl<Button>("PinBtn")!.Click += OnPin;
