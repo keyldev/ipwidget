@@ -5,8 +5,7 @@
         mc:Ignorable="d"
         x:Class="IpWidget.MainWindow"
         Title="IP Widget"
-        Width="340" Height="520"
-        MinWidth="300" MinHeight="420"
+        Width="340" Height="452"
         CanResize="False"
         ShowInTaskbar="True"
         SystemDecorations="None"
@@ -27,7 +26,6 @@
             <GradientStop Color="#4FD1FF" Offset="1"/>
         </LinearGradientBrush>
 
-        <!-- icon geometries (mdi) -->
         <StreamGeometry x:Key="IconClose">M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z</StreamGeometry>
         <StreamGeometry x:Key="IconMinimize">M19,13H5V11H19V13Z</StreamGeometry>
         <StreamGeometry x:Key="IconPin">M16,12V4H17V2H7V4H8V12L6,14V16H11.2V22H12.8V16H18V14L16,12Z</StreamGeometry>
@@ -37,109 +35,181 @@
         <StreamGeometry x:Key="IconLocation">M12,11.5A2.5,2.5 0 0,1 9.5,9A2.5,2.5 0 0,1 12,6.5A2.5,2.5 0 0,1 14.5,9A2.5,2.5 0 0,1 12,11.5M12,2A7,7 0 0,0 5,9C5,14.25 12,22 12,22C12,22 19,14.25 19,9A7,7 0 0,0 12,2Z</StreamGeometry>
         <StreamGeometry x:Key="IconShieldCheck">M12,1L3,5V11C3,16.55 6.84,21.74 12,23C17.16,21.74 21,16.55 21,11V5L12,1M10,17L6,13L7.41,11.59L10,14.17L16.59,7.58L18,9L10,17Z</StreamGeometry>
         <StreamGeometry x:Key="IconShieldAlert">M12,2L4,5V11.09C4,16.14 7.41,20.85 12,22C16.59,20.85 20,16.14 20,11.09V5L12,2M11,7H13V13H11V7M11,15H13V17H11V15Z</StreamGeometry>
+        <StreamGeometry x:Key="IconGear">M12,15.5A3.5,3.5 0 0,1 8.5,12A3.5,3.5 0 0,1 12,8.5A3.5,3.5 0 0,1 15.5,12A3.5,3.5 0 0,1 12,15.5M19.43,12.97C19.47,12.65 19.5,12.33 19.5,12C19.5,11.67 19.47,11.34 19.43,11L21.54,9.37C21.73,9.22 21.78,8.95 21.66,8.73L19.66,5.27C19.54,5.05 19.27,4.96 19.05,5.05L16.56,6.05C16.04,5.66 15.5,5.32 14.87,5.07L14.5,2.42C14.46,2.18 14.25,2 14,2H10C9.75,2 9.54,2.18 9.5,2.42L9.13,5.07C8.5,5.32 7.96,5.66 7.44,6.05L4.95,5.05C4.73,4.96 4.46,5.05 4.34,5.27L2.34,8.73C2.21,8.95 2.27,9.22 2.46,9.37L4.57,11C4.53,11.34 4.5,11.67 4.5,12C4.5,12.33 4.53,12.65 4.57,12.97L2.46,14.63C2.27,14.78 2.21,15.05 2.34,15.27L4.34,18.73C4.46,18.95 4.73,19.03 4.95,18.95L7.44,17.94C7.96,18.34 8.5,18.68 9.13,18.93L9.5,21.58C9.54,21.82 9.75,22 10,22H14C14.25,22 14.46,21.82 14.5,21.58L14.87,18.93C15.5,18.67 16.04,18.34 16.56,17.94L19.05,18.95C19.27,19.03 19.54,18.95 19.66,18.73L21.66,15.27C21.78,15.05 21.73,14.78 21.54,14.63L19.43,12.97Z</StreamGeometry>
+        <StreamGeometry x:Key="IconCompact">M14,14H19V16H16V19H14V14M5,14H10V19H8V16H5V14M8,5H10V10H5V8H8V5M19,8V10H14V5H16V8H19Z</StreamGeometry>
+        <StreamGeometry x:Key="IconExpand">M5,5H10V7H7V10H5V5M14,5H19V10H17V7H14V5M17,14H19V19H14V17H17V14M10,17V19H5V14H7V17H10Z</StreamGeometry>
+        <StreamGeometry x:Key="IconBack">M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z</StreamGeometry>
     </Window.Resources>
 
-    <Border CornerRadius="18" Background="{StaticResource BgBrush}"
-            BorderThickness="1" ClipToBounds="True">
-        <Border.BorderBrush>
-            <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,100%">
-                <GradientStop Color="#40FFFFFF" Offset="0"/>
-                <GradientStop Color="#10FFFFFF" Offset="1"/>
-            </LinearGradientBrush>
-        </Border.BorderBrush>
+    <Panel>
 
-        <Grid RowDefinitions="Auto,Auto,*,Auto">
+        <!-- ================= FULL VIEW ================= -->
+        <Border x:Name="FullCard" CornerRadius="18" Background="{StaticResource BgBrush}"
+                BorderThickness="1" ClipToBounds="True">
+            <Border.BorderBrush>
+                <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,100%">
+                    <GradientStop Color="#40FFFFFF" Offset="0"/>
+                    <GradientStop Color="#10FFFFFF" Offset="1"/>
+                </LinearGradientBrush>
+            </Border.BorderBrush>
 
-            <!-- ===== Title bar (drag) ===== -->
-            <Grid x:Name="TitleBar" Grid.Row="0" Height="42" Margin="16,10,10,0"
-                  ColumnDefinitions="Auto,*,Auto,Auto,Auto">
-                <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
-                    <Border Width="10" Height="10" CornerRadius="5"
-                            Background="{StaticResource AccentBrush}"/>
-                    <TextBlock Text="IP WIDGET" FontSize="12" FontWeight="Bold"
-                               Foreground="#CFE3FF" LetterSpacing="2" VerticalAlignment="Center"/>
-                </StackPanel>
+            <Grid RowDefinitions="Auto,Auto,*,Auto">
 
-                <Button x:Name="MinBtn" Grid.Column="2" Classes="chrome" ToolTip.Tip="Свернуть в трей">
-                    <PathIcon Data="{StaticResource IconMinimize}" Width="14" Height="14"/>
-                </Button>
-                <Button x:Name="PinBtn" Grid.Column="3" Classes="chrome" ToolTip.Tip="Поверх всех окон">
-                    <PathIcon x:Name="PinIcon" Data="{StaticResource IconPin}" Width="14" Height="14"/>
-                </Button>
-                <Button x:Name="CloseBtn" Grid.Column="4" Classes="chrome" ToolTip.Tip="Выход">
-                    <PathIcon Data="{StaticResource IconClose}" Width="14" Height="14"/>
-                </Button>
-            </Grid>
+                <!-- title bar -->
+                <Grid x:Name="TitleBar" Grid.Row="0" Height="38" Margin="14,8,8,0"
+                      ColumnDefinitions="Auto,*,Auto,Auto,Auto,Auto,Auto">
+                    <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                        <Border Width="9" Height="9" CornerRadius="5" Background="{StaticResource AccentBrush}"/>
+                        <TextBlock Text="IP WIDGET" FontSize="11" FontWeight="Bold"
+                                   Foreground="#CFE3FF" LetterSpacing="2" VerticalAlignment="Center"/>
+                    </StackPanel>
+                    <Button x:Name="SettingsBtn" Grid.Column="2" Classes="chrome" ToolTip.Tip="Настройки">
+                        <PathIcon Data="{StaticResource IconGear}" Width="14" Height="14"/>
+                    </Button>
+                    <Button x:Name="CompactBtn" Grid.Column="3" Classes="chrome" ToolTip.Tip="Компактный режим">
+                        <PathIcon Data="{StaticResource IconCompact}" Width="14" Height="14"/>
+                    </Button>
+                    <Button x:Name="PinBtn" Grid.Column="4" Classes="chrome" ToolTip.Tip="Поверх всех окон">
+                        <PathIcon x:Name="PinIcon" Data="{StaticResource IconPin}" Width="14" Height="14"/>
+                    </Button>
+                    <Button x:Name="MinBtn" Grid.Column="5" Classes="chrome" ToolTip.Tip="Свернуть в трей">
+                        <PathIcon Data="{StaticResource IconMinimize}" Width="14" Height="14"/>
+                    </Button>
+                    <Button x:Name="CloseBtn" Grid.Column="6" Classes="chrome" ToolTip.Tip="Закрыть">
+                        <PathIcon Data="{StaticResource IconClose}" Width="14" Height="14"/>
+                    </Button>
+                </Grid>
 
-            <!-- ===== Hero ===== -->
-            <StackPanel Grid.Row="1" Margin="20,14,20,6" Spacing="6">
-                <StackPanel Spacing="2">
+                <!-- hero -->
+                <StackPanel Grid.Row="1" Margin="18,10,18,4" Spacing="5">
                     <TextBlock Text="ВАШ ВНЕШНИЙ IP" FontSize="10" Foreground="#7E8AB5"
                                LetterSpacing="2" FontWeight="SemiBold"/>
-                    <TextBlock x:Name="IpText" Text="—" FontSize="30" FontWeight="Bold"
+                    <TextBlock x:Name="IpText" Text="—" FontSize="27" FontWeight="Bold"
                                Foreground="White" TextTrimming="CharacterEllipsis">
                         <TextBlock.Effect>
-                            <DropShadowEffect Color="#7C6CFF" BlurRadius="24" OffsetX="0" OffsetY="0" Opacity="0.6"/>
+                            <DropShadowEffect Color="#7C6CFF" BlurRadius="22" OffsetX="0" OffsetY="0" Opacity="0.6"/>
                         </TextBlock.Effect>
                     </TextBlock>
-                    <TextBlock x:Name="StatusText" Text="нажми «Проверить»" FontSize="11"
-                               Foreground="#8FA0C8"/>
-                </StackPanel>
+                    <TextBlock x:Name="StatusText" Text="нажми «Проверить»" FontSize="11" Foreground="#8FA0C8"/>
 
-                <!-- geo line -->
-                <StackPanel x:Name="GeoPanel" Orientation="Horizontal" Spacing="7" IsVisible="False">
-                    <PathIcon Data="{StaticResource IconLocation}" Width="13" Height="13"
-                              Foreground="#8FA0C8" VerticalAlignment="Center"/>
-                    <TextBlock x:Name="GeoText" FontSize="12" Foreground="#C2D2F0"
-                               VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
-                </StackPanel>
-
-                <!-- VPN / connection-type chip -->
-                <Border x:Name="VpnChip" CornerRadius="8" Padding="10,5"
-                        HorizontalAlignment="Left" IsVisible="False">
-                    <StackPanel Orientation="Horizontal" Spacing="6">
-                        <PathIcon x:Name="VpnIcon" Width="14" Height="14" VerticalAlignment="Center"/>
-                        <TextBlock x:Name="VpnText" FontSize="11" FontWeight="SemiBold"
-                                   VerticalAlignment="Center"/>
+                    <StackPanel x:Name="GeoPanel" Orientation="Horizontal" Spacing="7" IsVisible="False">
+                        <Image x:Name="FlagImg" Height="12" Stretch="Uniform" VerticalAlignment="Center" IsVisible="False"/>
+                        <PathIcon x:Name="GeoPin" Data="{StaticResource IconLocation}" Width="13" Height="13"
+                                  Foreground="#8FA0C8" VerticalAlignment="Center"/>
+                        <TextBlock x:Name="GeoText" FontSize="12" Foreground="#C2D2F0"
+                                   VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
                     </StackPanel>
-                </Border>
+
+                    <Border x:Name="VpnChip" CornerRadius="8" Padding="10,5"
+                            HorizontalAlignment="Left" IsVisible="False">
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <PathIcon x:Name="VpnIcon" Width="14" Height="14" VerticalAlignment="Center"/>
+                            <TextBlock x:Name="VpnText" FontSize="11" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+
+                <!-- sources -->
+                <ScrollViewer Grid.Row="2" Margin="14,6,14,0" VerticalScrollBarVisibility="Auto">
+                    <ItemsControl x:Name="SourcesList">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate><StackPanel Spacing="6"/></ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                    </ItemsControl>
+                </ScrollViewer>
+
+                <!-- actions -->
+                <Grid Grid.Row="3" Margin="14,10,14,14" ColumnDefinitions="*,Auto,Auto">
+                    <Button x:Name="CheckBtn" Grid.Column="0" Classes="primary" HorizontalAlignment="Stretch">
+                        <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Center">
+                            <PathIcon Data="{StaticResource IconRefresh}" Width="16" Height="16"/>
+                            <TextBlock x:Name="CheckLabel" Text="Проверить" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
+                    <Button x:Name="CopyBtn" Grid.Column="1" Classes="ghost" Margin="8,0,0,0" ToolTip.Tip="Скопировать IP">
+                        <PathIcon Data="{StaticResource IconCopy}" Width="15" Height="15"/>
+                    </Button>
+                    <ToggleButton x:Name="AutoBtn" Grid.Column="2" Classes="ghost" Margin="8,0,0,0" ToolTip.Tip="Автообновление каждые 30с">
+                        <PathIcon Data="{StaticResource IconFlash}" Width="15" Height="15"/>
+                    </ToggleButton>
+                </Grid>
+            </Grid>
+        </Border>
+
+        <!-- ================= HUD (transparent) VIEW ================= -->
+        <Grid x:Name="HudView" Background="Transparent" IsVisible="False">
+            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="3">
+                <Image x:Name="HudFlag" Height="26" Stretch="Uniform" HorizontalAlignment="Center"
+                       Margin="0,0,0,3" IsVisible="False">
+                    <Image.Effect>
+                        <DropShadowEffect Color="#000000" BlurRadius="8" OffsetX="0" OffsetY="1" Opacity="0.8"/>
+                    </Image.Effect>
+                </Image>
+                <TextBlock x:Name="HudIp" Text="—" FontSize="26" FontWeight="Bold"
+                           Foreground="White" HorizontalAlignment="Center">
+                    <TextBlock.Effect>
+                        <DropShadowEffect Color="#000000" BlurRadius="10" OffsetX="0" OffsetY="1" Opacity="0.9"/>
+                    </TextBlock.Effect>
+                </TextBlock>
+                <TextBlock x:Name="HudCountry" Text="" FontSize="13" FontWeight="SemiBold"
+                           Foreground="#EAF2FF" HorizontalAlignment="Center">
+                    <TextBlock.Effect>
+                        <DropShadowEffect Color="#000000" BlurRadius="8" OffsetX="0" OffsetY="1" Opacity="0.9"/>
+                    </TextBlock.Effect>
+                </TextBlock>
             </StackPanel>
 
-            <!-- ===== Sources ===== -->
-            <ScrollViewer Grid.Row="2" Margin="14,6,14,0" VerticalScrollBarVisibility="Auto">
-                <ItemsControl x:Name="SourcesList">
-                    <ItemsControl.ItemsPanel>
-                        <ItemsPanelTemplate>
-                            <StackPanel Spacing="6"/>
-                        </ItemsPanelTemplate>
-                    </ItemsControl.ItemsPanel>
-                </ItemsControl>
-            </ScrollViewer>
-
-            <!-- ===== Actions ===== -->
-            <Grid Grid.Row="3" Margin="14,10,14,14" ColumnDefinitions="*,Auto,Auto">
-                <Button x:Name="CheckBtn" Grid.Column="0" Classes="primary" HorizontalAlignment="Stretch">
-                    <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Center">
-                        <PathIcon Data="{StaticResource IconRefresh}" Width="16" Height="16"/>
-                        <TextBlock x:Name="CheckLabel" Text="Проверить" VerticalAlignment="Center"/>
-                    </StackPanel>
+            <StackPanel x:Name="HudControls" Orientation="Horizontal" Spacing="4"
+                        HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,4,4,0" Opacity="0">
+                <Button x:Name="HudRefreshBtn" Classes="hud" ToolTip.Tip="Обновить">
+                    <PathIcon Data="{StaticResource IconRefresh}" Width="12" Height="12"/>
                 </Button>
-                <Button x:Name="CopyBtn" Grid.Column="1" Classes="ghost" Margin="8,0,0,0"
-                        ToolTip.Tip="Скопировать IP">
-                    <PathIcon Data="{StaticResource IconCopy}" Width="15" Height="15"/>
+                <Button x:Name="HudExpandBtn" Classes="hud" ToolTip.Tip="Развернуть">
+                    <PathIcon Data="{StaticResource IconExpand}" Width="12" Height="12"/>
                 </Button>
-                <ToggleButton x:Name="AutoBtn" Grid.Column="2" Classes="ghost" Margin="8,0,0,0"
-                        ToolTip.Tip="Автообновление каждые 30с">
-                    <PathIcon Data="{StaticResource IconFlash}" Width="15" Height="15"/>
-                </ToggleButton>
-            </Grid>
+                <Button x:Name="HudCloseBtn" Classes="hud" ToolTip.Tip="Закрыть">
+                    <PathIcon Data="{StaticResource IconClose}" Width="12" Height="12"/>
+                </Button>
+            </StackPanel>
         </Grid>
-    </Border>
+
+        <!-- ================= SETTINGS OVERLAY ================= -->
+        <Border x:Name="SettingsOverlay" CornerRadius="18" Background="{StaticResource BgBrush}"
+                BorderThickness="1" BorderBrush="#30FFFFFF" IsVisible="False">
+            <StackPanel Margin="20,14,20,20" Spacing="14">
+                <Grid ColumnDefinitions="Auto,*">
+                    <Button x:Name="SettingsBackBtn" Classes="chrome" ToolTip.Tip="Назад">
+                        <PathIcon Data="{StaticResource IconBack}" Width="15" Height="15"/>
+                    </Button>
+                    <TextBlock Grid.Column="1" Text="НАСТРОЙКИ" FontSize="12" FontWeight="Bold"
+                               Foreground="#CFE3FF" LetterSpacing="2" VerticalAlignment="Center" Margin="6,0,0,0"/>
+                </Grid>
+
+                <StackPanel Spacing="8">
+                    <TextBlock Text="При закрытии" FontSize="11" Foreground="#7E8AB5"
+                               LetterSpacing="1" FontWeight="SemiBold"/>
+                    <RadioButton x:Name="CloseTrayRadio" GroupName="close" Content="Сворачивать в трей"/>
+                    <RadioButton x:Name="CloseQuitRadio" GroupName="close" Content="Закрывать полностью"/>
+                </StackPanel>
+
+                <Border Height="1" Background="#1AFFFFFF"/>
+
+                <StackPanel Spacing="10">
+                    <CheckBox x:Name="TopmostChk" Content="Поверх всех окон"/>
+                    <CheckBox x:Name="FlagChk" Content="Показывать флаг страны"/>
+                    <CheckBox x:Name="CompactChk" Content="Компактный прозрачный режим"/>
+                </StackPanel>
+
+                <TextBlock Text="Компактный режим прячет всё, кроме IP, страны и флага — виджет становится прозрачным. Наведи курсор, чтобы увидеть кнопки."
+                           FontSize="10" Foreground="#6E7AA5" TextWrapping="Wrap"/>
+            </StackPanel>
+        </Border>
+    </Panel>
 
     <Window.Styles>
         <Style Selector="Button.chrome">
-            <Setter Property="Width" Value="30"/>
-            <Setter Property="Height" Value="30"/>
+            <Setter Property="Width" Value="28"/>
+            <Setter Property="Height" Value="28"/>
             <Setter Property="Padding" Value="0"/>
             <Setter Property="Foreground" Value="#B9C7EC"/>
             <Setter Property="Background" Value="Transparent"/>
@@ -149,6 +219,21 @@
         </Style>
         <Style Selector="Button.chrome:pointerover /template/ ContentPresenter">
             <Setter Property="Background" Value="#22FFFFFF"/>
+        </Style>
+
+        <!-- hud floating buttons -->
+        <Style Selector="Button.hud">
+            <Setter Property="Width" Value="24"/>
+            <Setter Property="Height" Value="24"/>
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="Foreground" Value="#EAF2FF"/>
+            <Setter Property="Background" Value="#66000000"/>
+            <Setter Property="CornerRadius" Value="7"/>
+            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+        </Style>
+        <Style Selector="Button.hud:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="#99000000"/>
         </Style>
 
         <Style Selector="Button.primary">
@@ -194,6 +279,11 @@
         </Style>
         <Style Selector="ToggleButton.ghost:checked /template/ ContentPresenter">
             <Setter Property="Background" Value="#4C7C6CFF"/>
+        </Style>
+
+        <Style Selector="CheckBox, RadioButton">
+            <Setter Property="Foreground" Value="#CFE3FF"/>
+            <Setter Property="FontSize" Value="13"/>
         </Style>
     </Window.Styles>
 </Window>

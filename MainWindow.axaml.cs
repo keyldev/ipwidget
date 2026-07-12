@@ -11,6 +11,7 @@ using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media;
+using Avalonia.Media.Imaging;
 using Avalonia.Threading;
 using IpWidget.Services;
 
@@ -20,26 +21,40 @@ public partial class MainWindow : Window
 {
     private readonly IpService _service = new();
     private readonly GeoService _geo = new();
+    private readonly FlagService _flags = new();
+    private readonly Settings _settings = Settings.Load();
     private readonly Dictionary<string, SourceRow> _rows = new();
     private CancellationTokenSource? _inflight;
     private DispatcherTimer? _autoTimer;
     private bool _busy;
+    private string? _lastCountryCode;
 
     /// <summary>Set by App; performs a real application shutdown (window lives in tray).</summary>
     public Action? RequestQuit { get; set; }
 
-    private TextBlock _ipText = null!;
-    private TextBlock _statusText = null!;
-    private TextBlock _checkLabel = null!;
+    // full view
+    private TextBlock _ipText = null!, _statusText = null!, _checkLabel = null!;
     private ItemsControl _sourcesList = null!;
     private Button _checkBtn = null!;
     private PathIcon _pinIcon = null!;
-
     private StackPanel _geoPanel = null!;
+    private Image _flagImg = null!;
     private TextBlock _geoText = null!;
     private Border _vpnChip = null!;
     private PathIcon _vpnIcon = null!;
     private TextBlock _vpnText = null!;
+
+    // hud view
+    private Grid _hudView = null!;
+    private Border _fullCard = null!;
+    private Border _settingsOverlay = null!;
+    private Image _hudFlag = null!;
+    private TextBlock _hudIp = null!, _hudCountry = null!;
+    private StackPanel _hudControls = null!;
+
+    // settings controls
+    private RadioButton _closeTrayRadio = null!, _closeQuitRadio = null!;
+    private CheckBox _topmostChk = null!, _flagChk = null!, _compactChk = null!;
 
     private static readonly IBrush Muted = new SolidColorBrush(Color.Parse("#B9C7EC"));
     private static readonly IBrush Accent = new SolidColorBrush(Color.Parse("#4FD1FF"));
@@ -54,28 +69,75 @@ public partial class MainWindow : Window
         _sourcesList = this.FindControl<ItemsControl>("SourcesList")!;
         _checkBtn = this.FindControl<Button>("CheckBtn")!;
         _pinIcon = this.FindControl<PathIcon>("PinIcon")!;
-
         _geoPanel = this.FindControl<StackPanel>("GeoPanel")!;
+        _flagImg = this.FindControl<Image>("FlagImg")!;
         _geoText = this.FindControl<TextBlock>("GeoText")!;
         _vpnChip = this.FindControl<Border>("VpnChip")!;
         _vpnIcon = this.FindControl<PathIcon>("VpnIcon")!;
         _vpnText = this.FindControl<TextBlock>("VpnText")!;
 
+        _hudView = this.FindControl<Grid>("HudView")!;
+        _fullCard = this.FindControl<Border>("FullCard")!;
+        _settingsOverlay = this.FindControl<Border>("SettingsOverlay")!;
+        _hudFlag = this.FindControl<Image>("HudFlag")!;
+        _hudIp = this.FindControl<TextBlock>("HudIp")!;
+        _hudCountry = this.FindControl<TextBlock>("HudCountry")!;
+        _hudControls = this.FindControl<StackPanel>("HudControls")!;
+
+        _closeTrayRadio = this.FindControl<RadioButton>("CloseTrayRadio")!;
+        _closeQuitRadio = this.FindControl<RadioButton>("CloseQuitRadio")!;
+        _topmostChk = this.FindControl<CheckBox>("TopmostChk")!;
+        _flagChk = this.FindControl<CheckBox>("FlagChk")!;
+        _compactChk = this.FindControl<CheckBox>("CompactChk")!;
+
+        // ---- full view wiring ----
         this.FindControl<Grid>("TitleBar")!.PointerPressed += OnDrag;
-        this.FindControl<Button>("MinBtn")!.Click += (_, _) => Hide();
-        this.FindControl<Button>("CloseBtn")!.Click += (_, _) => (RequestQuit ?? Close)();
+        this.FindControl<Button>("SettingsBtn")!.Click += (_, _) => ShowSettings(true);
+        this.FindControl<Button>("CompactBtn")!.Click += (_, _) => SetCompact(true);
         this.FindControl<Button>("PinBtn")!.Click += OnPin;
+        this.FindControl<Button>("MinBtn")!.Click += (_, _) => Hide();
+        this.FindControl<Button>("CloseBtn")!.Click += (_, _) => OnCloseRequested();
         _checkBtn.Click += async (_, _) => await CheckAsync();
         this.FindControl<Button>("CopyBtn")!.Click += OnCopy;
         this.FindControl<ToggleButton>("AutoBtn")!.IsCheckedChanged += OnAutoToggled;
 
+        // ---- hud view wiring ----
+        _hudView.PointerPressed += OnDrag;
+        _hudView.PointerEntered += (_, _) => _hudControls.Opacity = 1;
+        _hudView.PointerExited += (_, _) => _hudControls.Opacity = 0;
+        this.FindControl<Button>("HudRefreshBtn")!.Click += async (_, _) => await CheckAsync();
+        this.FindControl<Button>("HudExpandBtn")!.Click += (_, _) => SetCompact(false);
+        this.FindControl<Button>("HudCloseBtn")!.Click += (_, _) => OnCloseRequested();
+
+        // ---- settings wiring ----
+        this.FindControl<Button>("SettingsBackBtn")!.Click += (_, _) => ShowSettings(false);
+        _closeTrayRadio.IsCheckedChanged += OnSettingChanged;
+        _closeQuitRadio.IsCheckedChanged += OnSettingChanged;
+        _topmostChk.IsCheckedChanged += OnSettingChanged;
+        _flagChk.IsCheckedChanged += OnSettingChanged;
+        _compactChk.IsCheckedChanged += OnCompactCheckChanged;
+
+        ApplySettingsToUi();
         BuildRows();
-        Opened += async (_, _) => await CheckAsync();
+
+        Opened += OnOpened;
     }
 
     private void InitializeComponent() => AvaloniaXamlLoader.Load(this);
 
-    // ---- public hooks for the tray ----
+    private async void OnOpened(object? sender, EventArgs e)
+    {
+        if (_settings.X is { } x && _settings.Y is { } y)
+            Position = new PixelPoint(x, y);
+
+        Topmost = _settings.Topmost;
+        _pinIcon.Foreground = Topmost ? Accent : Muted;
+        SetCompact(_settings.Compact, save: false);
+
+        await CheckAsync();
+    }
+
+    // ---------- tray hooks ----------
     public void ShowFromTray()
     {
         Show();
@@ -85,6 +147,94 @@ public partial class MainWindow : Window
 
     public void TriggerCheck() => _ = CheckAsync();
 
+    // ---------- mode / settings ----------
+    private void SetCompact(bool compact, bool save = true)
+    {
+        _settings.Compact = compact;
+        _settingsOverlay.IsVisible = false;
+        _fullCard.IsVisible = !compact;
+        _hudView.IsVisible = compact;
+
+        if (compact)
+        {
+            TransparencyLevelHint = new[] { WindowTransparencyLevel.Transparent };
+            Width = 250;
+            Height = 128;
+        }
+        else
+        {
+            TransparencyLevelHint = new[]
+            {
+                WindowTransparencyLevel.AcrylicBlur,
+                WindowTransparencyLevel.Blur,
+                WindowTransparencyLevel.Transparent,
+            };
+            Width = 340;
+            Height = 452;
+        }
+
+        if (_compactChk.IsChecked != compact) _compactChk.IsChecked = compact;
+        if (save) Save();
+    }
+
+    private void ShowSettings(bool show)
+    {
+        if (show) ApplySettingsToUi();
+        _settingsOverlay.IsVisible = show;
+    }
+
+    private void ApplySettingsToUi()
+    {
+        _closeTrayRadio.IsChecked = _settings.CloseToTray;
+        _closeQuitRadio.IsChecked = !_settings.CloseToTray;
+        _topmostChk.IsChecked = _settings.Topmost;
+        _flagChk.IsChecked = _settings.ShowFlag;
+        _compactChk.IsChecked = _settings.Compact;
+    }
+
+    private void OnSettingChanged(object? sender, RoutedEventArgs e)
+    {
+        _settings.CloseToTray = _closeTrayRadio.IsChecked == true;
+        _settings.Topmost = _topmostChk.IsChecked == true;
+        _settings.ShowFlag = _flagChk.IsChecked == true;
+
+        Topmost = _settings.Topmost;
+        _pinIcon.Foreground = Topmost ? Accent : Muted;
+
+        if (!_settings.ShowFlag)
+        {
+            _flagImg.IsVisible = false;
+            _hudFlag.IsVisible = false;
+        }
+        else if (_lastCountryCode is not null)
+        {
+            _ = LoadFlagAsync(_lastCountryCode);
+        }
+
+        Save();
+    }
+
+    private void OnCompactCheckChanged(object? sender, RoutedEventArgs e)
+    {
+        if (_compactChk.IsChecked is { } want && want != _settings.Compact)
+            SetCompact(want);
+    }
+
+    private void OnCloseRequested()
+    {
+        if (_settings.CloseToTray) Hide();
+        else (RequestQuit ?? Close)();
+    }
+
+    private void Save()
+    {
+        var p = Position;
+        _settings.X = p.X;
+        _settings.Y = p.Y;
+        _settings.Save();
+    }
+
+    // ---------- checking ----------
     private void BuildRows()
     {
         var panel = new List<Control>();
@@ -129,12 +279,14 @@ public partial class MainWindow : Window
             if (consensus is not null)
             {
                 _ipText.Text = consensus;
+                _hudIp.Text = consensus;
                 _statusText.Text = $"подтверждено {ok}/{results.Count} источниками";
                 await LoadGeoAsync(consensus, ct);
             }
             else
             {
                 _ipText.Text = "—";
+                _hudIp.Text = "нет сети";
                 _statusText.Text = "не удалось определить IP (нет сети?)";
             }
         }
@@ -155,6 +307,11 @@ public partial class MainWindow : Window
             ? info.Provider
             : $"{info.Location} · {info.Provider}";
         _geoPanel.IsVisible = true;
+        _hudCountry.Text = info.Location;
+
+        _lastCountryCode = info.CountryCode;
+        if (_settings.ShowFlag && info.CountryCode is not null)
+            await LoadFlagAsync(info.CountryCode, ct);
 
         if (info.IsHosting)
         {
@@ -179,6 +336,25 @@ public partial class MainWindow : Window
         _vpnChip.IsVisible = true;
     }
 
+    private async Task LoadFlagAsync(string cc, CancellationToken ct = default)
+    {
+        Bitmap? bmp = await _flags.GetAsync(cc, ct);
+        if (ct.IsCancellationRequested) return;
+
+        if (bmp is null)
+        {
+            _flagImg.IsVisible = false;
+            _hudFlag.IsVisible = false;
+            return;
+        }
+
+        _flagImg.Source = bmp;
+        _flagImg.IsVisible = true;
+        _hudFlag.Source = bmp;
+        _hudFlag.IsVisible = _settings.ShowFlag;
+    }
+
+    // ---------- misc handlers ----------
     private void OnDrag(object? sender, PointerPressedEventArgs e)
     {
         if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
@@ -188,7 +364,9 @@ public partial class MainWindow : Window
     private void OnPin(object? sender, RoutedEventArgs e)
     {
         Topmost = !Topmost;
+        _settings.Topmost = Topmost;
         _pinIcon.Foreground = Topmost ? Accent : Muted;
+        Save();
     }
 
     private async void OnCopy(object? sender, RoutedEventArgs e)
@@ -219,10 +397,12 @@ public partial class MainWindow : Window
 
     protected override void OnClosed(EventArgs e)
     {
+        Save();
         _inflight?.Cancel();
         _autoTimer?.Stop();
         _service.Dispose();
         _geo.Dispose();
+        _flags.Dispose();
         base.OnClosed(e);
     }
 }
