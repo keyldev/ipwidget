@@ -27,6 +27,7 @@ public partial class MainWindow : Window
     private CancellationTokenSource? _inflight;
     private DispatcherTimer? _autoTimer;
     private bool _busy;
+    private bool _applying;
     private string? _lastCountryCode;
 
     /// <summary>Set by App; performs a real application shutdown (window lives in tray).</summary>
@@ -55,6 +56,7 @@ public partial class MainWindow : Window
     // settings controls
     private RadioButton _closeTrayRadio = null!, _closeQuitRadio = null!;
     private CheckBox _topmostChk = null!, _flagChk = null!, _compactChk = null!;
+    private ToggleButton _autoBtn = null!;
 
     private static readonly IBrush Muted = new SolidColorBrush(Color.Parse("#B9C7EC"));
     private static readonly IBrush Accent = new SolidColorBrush(Color.Parse("#4FD1FF"));
@@ -101,7 +103,8 @@ public partial class MainWindow : Window
         this.FindControl<Button>("CloseBtn")!.Click += (_, _) => OnCloseRequested();
         _checkBtn.Click += async (_, _) => await CheckAsync();
         this.FindControl<Button>("CopyBtn")!.Click += OnCopy;
-        this.FindControl<ToggleButton>("AutoBtn")!.IsCheckedChanged += OnAutoToggled;
+        _autoBtn = this.FindControl<ToggleButton>("AutoBtn")!;
+        _autoBtn.IsCheckedChanged += OnAutoToggled;
 
         // ---- hud view wiring ----
         _hudView.PointerPressed += OnDrag;
@@ -135,6 +138,7 @@ public partial class MainWindow : Window
         Topmost = _settings.Topmost;
         _pinIcon.Foreground = Topmost ? Accent : Muted;
         SetCompact(_settings.Compact, save: false);
+        _autoBtn.IsChecked = _settings.AutoRefresh; // restores timer via OnAutoToggled
 
         await CheckAsync();
     }
@@ -187,15 +191,18 @@ public partial class MainWindow : Window
 
     private void ApplySettingsToUi()
     {
+        _applying = true;
         _closeTrayRadio.IsChecked = _settings.CloseToTray;
         _closeQuitRadio.IsChecked = !_settings.CloseToTray;
         _topmostChk.IsChecked = _settings.Topmost;
         _flagChk.IsChecked = _settings.ShowFlag;
         _compactChk.IsChecked = _settings.Compact;
+        _applying = false;
     }
 
     private void OnSettingChanged(object? sender, RoutedEventArgs e)
     {
+        if (_applying) return;
         _settings.CloseToTray = _closeTrayRadio.IsChecked == true;
         _settings.Topmost = _topmostChk.IsChecked == true;
         _settings.ShowFlag = _flagChk.IsChecked == true;
@@ -218,6 +225,7 @@ public partial class MainWindow : Window
 
     private void OnCompactCheckChanged(object? sender, RoutedEventArgs e)
     {
+        if (_applying) return;
         if (_compactChk.IsChecked is { } want && want != _settings.Compact)
             SetCompact(want);
     }
@@ -384,7 +392,8 @@ public partial class MainWindow : Window
 
     private void OnAutoToggled(object? sender, RoutedEventArgs e)
     {
-        if (sender is ToggleButton { IsChecked: true })
+        var on = _autoBtn.IsChecked == true;
+        if (on)
         {
             _autoTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(30) };
             _autoTimer.Tick += async (_, _) => await CheckAsync();
@@ -394,6 +403,12 @@ public partial class MainWindow : Window
         {
             _autoTimer?.Stop();
             _autoTimer = null;
+        }
+
+        if (!_applying && _settings.AutoRefresh != on)
+        {
+            _settings.AutoRefresh = on;
+            Save();
         }
     }
 

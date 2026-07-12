@@ -45,7 +45,7 @@ dotnet publish -c Release -r win-x64 --self-contained \
 `win-x64`, `linux-x64`, `osx-x64`, `osx-arm64` и прикладывает их к релизу.
 
 ```bash
-git tag v0.1.1 && git push origin v0.1.1
+git tag v0.1.2 && git push origin v0.1.2
 ```
 
 ## Лицензия

@@ -11,6 +11,7 @@ public sealed class Settings
     public bool Compact { get; set; }
     public bool Topmost { get; set; }
     public bool ShowFlag { get; set; } = true;
+    public bool AutoRefresh { get; set; }
     public int? X { get; set; }
     public int? Y { get; set; }
 
