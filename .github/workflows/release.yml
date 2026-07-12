@@ -1,0 +1,48 @@
+name: release
+
+on:
+  push:
+    tags: [ 'v*' ]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        rid: [ win-x64, linux-x64, osx-x64, osx-arm64 ]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+
+      - name: Publish (${{ matrix.rid }})
+        run: >
+          dotnet publish IpWidget.csproj -c Release -r ${{ matrix.rid }}
+          --self-contained
+          -p:PublishSingleFile=true
+          -p:EnableCompressionInSingleFile=true
+          -o publish/${{ matrix.rid }}
+
+      - name: Archive
+        run: |
+          NAME="ipwidget-${{ github.ref_name }}-${{ matrix.rid }}"
+          cd publish/${{ matrix.rid }}
+          if [ "${{ matrix.rid }}" = "win-x64" ]; then
+            zip -r "../../$NAME.zip" .
+          else
+            tar -czf "../../$NAME.tar.gz" .
+          fi
+
+      - name: Attach to release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            ipwidget-*.zip
+            ipwidget-*.tar.gz

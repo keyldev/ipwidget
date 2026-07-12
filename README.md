@@ -34,3 +34,16 @@ dotnet publish -c Release -r win-x64 --self-contained \
 
 - [Avalonia UI](https://avaloniaui.net) 11.2 · .NET 9
 - Без внешних ассетов — иконка приложения/трея рисуется в рантайме.
+
+## Релизы
+
+Пуш тега `v*` собирает через GitHub Actions single-file бинарники под
+`win-x64`, `linux-x64`, `osx-x64`, `osx-arm64` и прикладывает их к релизу.
+
+```bash
+git tag v0.1.0 && git push origin v0.1.0
+```
+
+## Лицензия
+
+[MIT](LICENSE) © keyldev
