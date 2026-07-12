@@ -10,7 +10,7 @@
         ShowInTaskbar="True"
         SystemDecorations="None"
         Background="Transparent"
-        TransparencyLevelHint="Transparent"
+        TransparencyLevelHint="AcrylicBlur, Blur, Transparent"
         ExtendClientAreaToDecorationsHint="True"
         ExtendClientAreaChromeHints="NoChrome"
         ExtendClientAreaTitleBarHeightHint="0">
@@ -44,8 +44,8 @@
     <Panel>
 
         <!-- ================= FULL VIEW ================= -->
-        <Border x:Name="FullCard" CornerRadius="18" Background="{StaticResource BgBrush}"
-                BorderThickness="1" ClipToBounds="True">
+        <Border x:Name="FullCard" CornerRadius="0" Background="{StaticResource BgBrush}"
+                BorderThickness="0" ClipToBounds="True">
             <Border.BorderBrush>
                 <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,100%">
                     <GradientStop Color="#40FFFFFF" Offset="0"/>
@@ -174,8 +174,8 @@
         </Grid>
 
         <!-- ================= SETTINGS OVERLAY ================= -->
-        <Border x:Name="SettingsOverlay" CornerRadius="18" Background="{StaticResource BgBrush}"
-                BorderThickness="1" BorderBrush="#30FFFFFF" IsVisible="False">
+        <Border x:Name="SettingsOverlay" CornerRadius="0" Background="{StaticResource BgBrush}"
+                BorderThickness="0" IsVisible="False">
             <StackPanel Margin="20,14,20,20" Spacing="14">
                 <Grid ColumnDefinitions="Auto,*">
                     <Button x:Name="SettingsBackBtn" Classes="chrome" ToolTip.Tip="Назад">

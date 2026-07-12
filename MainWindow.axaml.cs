@@ -157,11 +157,18 @@ public partial class MainWindow : Window
 
         if (compact)
         {
+            TransparencyLevelHint = new[] { WindowTransparencyLevel.Transparent };
             Width = 250;
             Height = 128;
         }
         else
         {
+            TransparencyLevelHint = new[]
+            {
+                WindowTransparencyLevel.AcrylicBlur,
+                WindowTransparencyLevel.Blur,
+                WindowTransparencyLevel.Transparent,
+            };
             Width = 340;
             Height = 452;
         }
